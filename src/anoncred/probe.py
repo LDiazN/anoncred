@@ -1,8 +1,9 @@
 from httpx import Client
+from typing import Dict, Any
 from pydantic import BaseModel
 from anoncred.protocol import Issuance
 import random
-from anoncred.utils import to_str
+from anoncred.utils import to_str, to_bin
 
 
 class UserAuthCredentials(BaseModel):
@@ -23,6 +24,10 @@ class Probe:
         # We only store what the client stores permanently.
         self.public_params: bytes | None = None
         self.manifest_version: str
+        self.credential_signature: str
+        self.public_sign_key: str
+        self.credential: bytes
+        self.state: Dict[str, Any] = {}
 
     def get_manifest(self):
         r = self.client.get("manifest")
@@ -49,6 +54,13 @@ class Probe:
             },
         )
         assert r.status_code == 200
+        j = r.json()
 
-        # Validate the credentials
+        self.credential_signature = j['signature']
+        self.public_sign_key = j['public_sign_key']
+
+        # Validate credentials
+        credential = to_bin(j['credential_sign_request'])
+        self.credential = Issuance.finalize(self.state, credential)
+
 

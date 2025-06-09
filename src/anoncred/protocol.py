@@ -1,6 +1,5 @@
 import random
 from typing import Callable, Any
-import json
 
 def rng() -> int:
     return random.randint(0, 999999)
@@ -14,9 +13,11 @@ Rng = Callable[[], int]
 def get_nym(sign_request : CredentialSignRequest | CredentialSignResponse) -> bytes:
     return b'1234'
 
+# TODO Rustify
 def get_age(sign_request : CredentialSignRequest | CredentialSignResponse) -> int:
     return 42
 
+# TODO Rustify
 def get_msmnt_cnt(sign_request : CredentialSignRequest | CredentialSignResponse) -> int:
     return 69
 

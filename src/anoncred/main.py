@@ -4,8 +4,6 @@ from anoncred.utils import to_bin, to_str
 from anoncred.models import UserAuthCredential, create_db_and_tables, SigningKeyPair
 from anoncred.protocol import (
     get_nym,
-    CredentialSignRequest,
-    CredentialSignResponse,
     Issuance,
 )
 from pydantic import BaseModel
