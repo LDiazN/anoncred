@@ -10,9 +10,11 @@ import random
 import string
 import os
 
+
 def generate_random_string(length=6):
     characters = string.ascii_letters + string.digits  # a-zA-Z0-9
-    return ''.join(random.choices(characters, k=length))
+    return "".join(random.choices(characters, k=length))
+
 
 @pytest.fixture
 def fake_get_session():
@@ -28,12 +30,13 @@ def fake_get_session():
         with Session(engine) as session:
             add_signing_keys(session)
             yield session
-        
+
     yield get_session
 
     db_path = Path(sqlite_file_name)
     if db_path.exists():
         os.remove(sqlite_file_name)
+
 
 @pytest.fixture
 def session(fake_get_session):
@@ -41,10 +44,11 @@ def session(fake_get_session):
 
 
 @pytest.fixture
-def client(fake_get_session : Callable[[], Session]):
+def client(fake_get_session: Callable[[], Session]):
     app.dependency_overrides[get_session] = fake_get_session
     client = TestClient(app)
     yield client
+
 
 def add_signing_keys(session: Session):
     keys = SigningKeyPair(public_key="public", secret_key="secret")

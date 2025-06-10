@@ -3,7 +3,7 @@ from fastapi import FastAPI, Response
 from anoncred.utils import to_bin, to_str
 from anoncred.models import UserAuthCredential, create_db_and_tables, SigningKeyPair
 from anoncred.protocol import (
-    get_nym,
+    get_nym_id,
     Issuance,
 )
 from pydantic import BaseModel
@@ -63,7 +63,7 @@ def register(request: RegisterRequest, session: SessionDep, response: Response):
     cred_sign_response = Issuance.handle(lambda: random.randint(0, 9999), cred_sign_req)
 
     # Create new credential and store it in the server
-    nym_id = get_nym(cred_sign_response)
+    nym_id = get_nym_id(cred_sign_response)
     user_cred = UserAuthCredential(nym_id=nym_id)
     session.add(user_cred)
     session.commit()
@@ -84,9 +84,29 @@ def register(request: RegisterRequest, session: SessionDep, response: Response):
 
 
 # -- < Submission > ----------------------------------
+class MeasurementSerialized(BaseModel):
+    measurement_count: int
+    nym: str  # base64 encoded nym
+    blocklist: list[str]  # base64 encoded list of bytes
+    data: str
+
+
+class PresentationMessage(BaseModel):
+    nym: str  # base64 encoded nym
+    age_lsb: int
+    msmnt_count_lsb: int
+
+
+class SubmitRequest(BaseModel):
+    credential: str
+    credential_sign_request: str
+    measurement: MeasurementSerialized
+    presentation_message: PresentationMessage
+
+
 @app.post("/submit")
-def submit():
-    return {"submir": "hello"}
+def submit(request: SubmitRequest):
+    return {"submit": "hello"}
 
 
 # -- < Credential update > ---------------------------

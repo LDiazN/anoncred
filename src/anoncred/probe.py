@@ -1,7 +1,7 @@
 from httpx import Client
 from typing import Dict, Any
 from pydantic import BaseModel
-from anoncred.protocol import Issuance
+from anoncred.protocol import Issuance, PRF, get_nym_id, compute_cred_sign_request
 import random
 from anoncred.utils import to_str, to_bin
 
@@ -28,6 +28,9 @@ class Probe:
         self.public_sign_key: str
         self.credential: bytes
         self.state: Dict[str, Any] = {}
+        self.nym_scope: str
+        self.age: int
+        self.msmnt_count: int
 
     def get_manifest(self):
         r = self.client.get("manifest")
@@ -35,6 +38,7 @@ class Probe:
         j = r.json()
         self.public_params = j["public_parameters"]
         self.manifest_version = j["version"]
+        self.nym_scope = j["nym_scope"]
 
     def register(self):
         assert (
@@ -56,11 +60,57 @@ class Probe:
         assert r.status_code == 200
         j = r.json()
 
-        self.credential_signature = j['signature']
-        self.public_sign_key = j['public_sign_key']
+        self.credential_signature = j["signature"]
+        self.public_sign_key = j["public_sign_key"]
 
         # Validate credentials
-        credential = to_bin(j['credential_sign_request'])
+        credential = to_bin(j["credential_sign_response"])
         self.credential = Issuance.finalize(self.state, credential)
 
+    def submit_measurement(self):
+        nym_scope = self.nym_scope.replace("{probe_cc}", self.get_cc()).replace(
+            "{probe_asn}", self.get_asn()
+        )
+        nym = PRF(nym_id=get_nym_id(self.credential), nym_scope=nym_scope)
 
+        # TODO Q? What do we do with this credential sign request? I guess it's sent with the
+        # request but it's not mentioned in the spec
+        new_cred_sign_request = compute_cred_sign_request(
+            self.age, self.msmnt_count, get_nym_id(self.credential)
+        )
+        presentation_message = {
+            "nym": to_str(nym),
+            "age_lsb": self.get_age_lsb(),
+            "msmnt_count_lsb": self.get_msmnt_count_lsb(),
+        }
+
+        request = {
+            # TODO Q? Is this the credential version? If not, how do we express the version?
+            "credential": to_str(self.credential),
+            "credential_sign_request": new_cred_sign_request,
+            "measurement": {
+                "measurement_count": self.msmnt_count,
+                # TODO: Q? Repeated here and in the presentation message?
+                "nym": to_str(nym),
+                # TODO: Q? Not sure what's the blocklist, we need more details on how to construct it
+                "blocklist": [],
+                "data": f"Data for measurement {self.msmnt_count}",
+            },
+            "presentation_message": presentation_message,
+        }
+        r = self.client.post("submit", data=request)
+        assert r.status_code == 200, r.json()
+
+    def get_age_lsb(self) -> int:
+        # Magically get only the least significant bytes
+        return self.age
+
+    def get_msmnt_count_lsb(self) -> int:
+        # Magically get only the least significant bytes
+        return self.msmnt_count
+
+    def get_cc(self):
+        return "VE"
+
+    def get_asn(self):
+        return "AS1234"

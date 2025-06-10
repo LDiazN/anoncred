@@ -11,11 +11,15 @@ def test_manifest(client):
     assert r.status_code == 200, r.json()
     pprint(r.json())
 
+
 def test_workflow(client):
     probe = Probe(client)
 
-    # 1. Step 1: manifest
+    # Step 1: manifest
     probe.get_manifest()
 
-    # Try to get manifest
+    # Step 2: Register
     probe.register()
+
+    # Step 3: Submit a measurement
+    probe.submit_measurement()
