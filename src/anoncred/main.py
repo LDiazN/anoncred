@@ -85,28 +85,23 @@ def register(request: RegisterRequest, session: SessionDep, response: Response):
 
 # -- < Submission > ----------------------------------
 class MeasurementSerialized(BaseModel):
-    measurement_count: int
-    nym: str  # base64 encoded nym
     blocklist: list[str]  # base64 encoded list of bytes
     data: str
 
-
-class PresentationMessage(BaseModel):
-    nym: str  # base64 encoded nym
-    age_lsb: int
-    msmnt_count_lsb: int
-
-
 class SubmitRequest(BaseModel):
-    credential: str
     credential_sign_request: str
     measurement: MeasurementSerialized
-    presentation_message: PresentationMessage
+    presentation_message: str
+    pass
 
+class SubmitResponse(BaseModel):
+    pass
 
-@app.post("/submit")
+@app.post("/submit", response_model=SubmitResponse)
 def submit(request: SubmitRequest):
-    return {"submit": "hello"}
+    presentation_message = to_bin(request.presentation_message)
+    return SubmitResponse()
+
 
 
 # -- < Credential update > ---------------------------

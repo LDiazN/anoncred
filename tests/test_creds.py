@@ -9,7 +9,6 @@ from pprint import pprint
 def test_manifest(client):
     r = client.get("/manifest")
     assert r.status_code == 200, r.json()
-    pprint(r.json())
 
 
 def test_workflow(client):

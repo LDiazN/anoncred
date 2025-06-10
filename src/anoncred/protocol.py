@@ -1,5 +1,5 @@
 import random
-from typing import Callable, Any
+from typing import Callable, Any, Tuple
 
 
 def rng() -> int:
@@ -9,6 +9,7 @@ def rng() -> int:
 CredentialSignRequest = bytes
 CredentialSignResponse = bytes
 Credential = bytes
+#! Note that the actual RNG should be cryptographically secure
 Rng = Callable[[], int]
 
 
@@ -62,3 +63,14 @@ class Issuance:
     @staticmethod
     def finalize(state: Any, response: CredentialSignResponse) -> Credential:
         return b"credential"
+
+class Submission:
+
+    # TODO Rustify
+    @staticmethod
+    def prepare(rng: Rng, parameters : bytes) -> Tuple[bytes, Any]:
+        """
+        # Returns 
+        (credential_submission_preparation, state)
+        """
+        return (b'preparation successful', {})
