@@ -1,10 +1,14 @@
 from contextlib import asynccontextmanager
+from fastapi import HTTPException
+from sqlmodel import select
 from fastapi import FastAPI, Response
 from anoncred.utils import to_bin, to_str
-from anoncred.models import UserAuthCredential, create_db_and_tables, SigningKeyPair
+from anoncred.models import UserAuthCredential, create_db_and_tables, SigningKeyPair, BlockListEntry
 from anoncred.protocol import (
+    get_nym_from_presentation_message,
     get_nym_id,
     Issuance,
+    Submission
 )
 from pydantic import BaseModel
 from .dependencies import SessionDep
@@ -21,6 +25,7 @@ def read_root():
 class Measurement(BaseModel):
     data: str
 
+RNG = lambda: random.randint(0,9999)
 
 # -- < Manifest > ------------------------------------
 @app.get("/manifest")
@@ -98,8 +103,29 @@ class SubmitResponse(BaseModel):
     pass
 
 @app.post("/submit", response_model=SubmitResponse)
-def submit(request: SubmitRequest):
+def submit(request: SubmitRequest, session : SessionDep):
+
+    # Check the credential presentation_message against NYM
     presentation_message = to_bin(request.presentation_message)
+    # TODO Handle Errors, for now we assume happy path
+    presentation_reply = Submission.handle(RNG, presentation_message)
+
+    # Check NYM not in blocklist
+    # TODO Q? The blocklist means the one for the measurement? It's not mentioned
+    # anywhere else. I think a DB-stored blocklist makes more sense
+
+    # TODO Q? Where's the nym? I will assume is in the presentation message
+    nym = get_nym_from_presentation_message(presentation_message)
+    q = select(BlockListEntry).where(BlockListEntry.nym==to_str(nym)).limit(1)
+    entry = session.exec(q).one_or_none()
+    if entry is not None:
+        raise HTTPException(status_code=403, detail={"error":"you are blocked"})
+
+    # Add submission.NYM = NYM
+    # Add submission.measurement_count_msb = measurement_count_msb
+    # Add submission to log
+    # Respond with credential_sign_response
+
     return SubmitResponse()
 
 

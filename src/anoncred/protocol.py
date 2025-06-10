@@ -8,10 +8,15 @@ def rng() -> int:
 
 CredentialSignRequest = bytes
 CredentialSignResponse = bytes
+PresentationMessage = bytes
+PresentationReply = bytes
 Credential = bytes
 #! Note that the actual RNG should be cryptographically secure
 Rng = Callable[[], int]
 
+# TODO Rustify
+def get_nym_from_presentation_message(presetation: PresentationMessage) -> bytes:
+    return b"nym"
 
 # TODO Rustify
 def get_nym_id(data: bytes) -> bytes:
@@ -74,3 +79,9 @@ class Submission:
         (credential_submission_preparation, state)
         """
         return (b'preparation successful', {})
+
+    # TODO Rustify
+    @staticmethod
+    def handle(rng: Rng, sign_request: PresentationMessage) -> PresentationReply:
+        # Assumes everything goes fine
+        return b"everything ok"

@@ -21,6 +21,12 @@ class UserAuthCredential(SQLModel, table=True):
         nullable=False,
     )
 
+class BlockListEntry(SQLModel, table = True):
+    """
+    A table with blocked nyms
+    """
+    nym: bytes = Field(primary_key=True)
+
 
 class SigningKeyPair(SQLModel, table=True):
     id: int = Field(primary_key=True, nullable=True, default=None)
