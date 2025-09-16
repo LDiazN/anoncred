@@ -1,8 +1,10 @@
 from typing import Callable
 from pathlib import Path
-from anoncred.models import engine, Session, SigningKeyPair
+from anoncred.models import Session, SigningKeyPair
 from anoncred.main import app
 from anoncred.dependencies import SessionDep, get_session
+from anoncred.models import ServerState
+import ooniauth_py as ooni
 from fastapi.testclient import TestClient
 import pytest
 from sqlmodel import SQLModel, create_engine
@@ -29,6 +31,7 @@ def fake_get_session():
     def get_session():
         with Session(engine) as session:
             add_signing_keys(session)
+            add_server_state(session)
             yield session
 
     yield get_session
@@ -55,3 +58,10 @@ def add_signing_keys(session: Session):
     session.add(keys)
     session.commit()
     session.refresh(keys)
+
+def add_server_state(session: Session):
+    state = ooni.ServerState()
+    db_state = ServerState(secret_key=state.get_secret_key(), public_parameters=state.get_public_parameters())
+    session.add(db_state)
+    session.commit()
+    session.refresh(db_state)

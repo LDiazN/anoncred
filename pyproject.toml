@@ -27,7 +27,7 @@ classifiers = [
 dependencies = [
     "fastapi[standard]",
     "sqlmodel",
-    "httpx"
+    "httpx",
 ]
 
 [project.urls]
@@ -37,6 +37,10 @@ Source = "https://github.com/Luis Díaz/anoncred"
 
 [tool.hatch.version]
 path = "src/anoncred/__about__.py"
+
+[tool.hatch.metadata]
+# This is required to specify the userauth_py with an explicit path
+allow-direct-references = true
 
 [tool.hatch.envs.default]
 dependencies = ["pytest", "pytest-cov", "click", "black", "pytest-postgresql", "pytest-asyncio", "pytest-docker"]
