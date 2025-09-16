@@ -25,27 +25,31 @@ class UserAuthCredential(SQLModel, table=True):
         nullable=False,
     )
 
+
 class ServerState(SQLModel, table=True):
     """
-    TODO Think about a proper way to store this data 
+    TODO Think about a proper way to store this data
     """
+
     id: int = Field(primary_key=True, nullable=True, default=None)
     secret_key: bytes = Field()
     public_parameters: bytes = Field()
 
     @classmethod
-    def update(cls, state : ooniauth.ServerState, session : Session):
+    def update(cls, state: ooniauth.ServerState, session: Session):
         q = select(cls).limit(1)
         entry = session.scalar(q)
         assert entry is not None, "Missing server state entry"
         entry.public_parameters = state.get_public_parameters()
         entry.secret_key = state.get_secret_key()
         session.commit()
-        
-class BlockListEntry(SQLModel, table = True):
+
+
+class BlockListEntry(SQLModel, table=True):
     """
     A table with blocked nyms
     """
+
     nym: bytes = Field(primary_key=True)
 
 
@@ -70,7 +74,7 @@ class Measurement(SQLModel, table=True):
     nym: bytes = Field(sa_column=Column(BINARY(32)))
     probe_cc: str = Field()
     probe_asn: str = Field()
-    test_name: str  = Field()
+    test_name: str = Field()
     # ... more data
 
 
@@ -84,6 +88,7 @@ engine = create_engine(sqlite_url, connect_args=connect_args)
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
 
+
 def init_server_state():
     with Session(engine) as session:
         q = select(ServerState).limit(1)
@@ -91,8 +96,11 @@ def init_server_state():
         if len(results.all()) == 0:
             logger.error("Initial state not found, creating...")
             state = ooniauth.ServerState()
-            db_state = ServerState(secret_key=state.get_secret_key(), public_parameters=state.get_public_parameters())
+            db_state = ServerState(
+                secret_key=state.get_secret_key(),
+                public_parameters=state.get_public_parameters(),
+            )
             session.add(db_state)
             session.commit()
-        else: 
+        else:
             logger.error("DB State already initialized")

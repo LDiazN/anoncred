@@ -59,9 +59,13 @@ def add_signing_keys(session: Session):
     session.commit()
     session.refresh(keys)
 
+
 def add_server_state(session: Session):
     state = ooni.ServerState()
-    db_state = ServerState(secret_key=state.get_secret_key(), public_parameters=state.get_public_parameters())
+    db_state = ServerState(
+        secret_key=state.get_secret_key(),
+        public_parameters=state.get_public_parameters(),
+    )
     session.add(db_state)
     session.commit()
     session.refresh(db_state)

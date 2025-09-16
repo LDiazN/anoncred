@@ -36,6 +36,7 @@ class Measurement(BaseModel):
     probe_asn: str
     # ... more data
 
+
 # -- < Manifest > ------------------------------------
 @app.get("/manifest")
 def manifest(server_state: ServerStateDep):
@@ -115,20 +116,27 @@ def submit(request: SubmitRequest, session: SessionDep, state: ServerStateDep):
 
     return SubmitResponse(submit_response=to_str(result))
 
+
 class MeasurementsResponse(BaseModel):
-    results : list[Measurement]
+    results: list[Measurement]
+
 
 @app.get("/measurements", response_model=MeasurementsResponse)
-def get_measurements(session : SessionDep):
+def get_measurements(session: SessionDep):
     q = select(models.Measurement).limit(100)
     results = session.scalars(q)
     response = MeasurementsResponse(results=[])
     for result in results:
         response.results.append(
-            Measurement(test_name=result.test_name, probe_cc=result.probe_cc, probe_asn=result.probe_asn)
+            Measurement(
+                test_name=result.test_name,
+                probe_cc=result.probe_cc,
+                probe_asn=result.probe_asn,
+            )
         )
-    
+
     return response
+
 
 # -- < Credential update > ---------------------------
 @app.post("/update/credentials")

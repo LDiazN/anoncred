@@ -14,9 +14,11 @@ Credential = bytes
 #! Note that the actual RNG should be cryptographically secure
 Rng = Callable[[], int]
 
+
 # TODO Rustify
 def get_nym_from_presentation_message(presetation: PresentationMessage) -> bytes:
     return b"nym"
+
 
 # TODO Rustify
 def get_nym_id(data: bytes) -> bytes:
@@ -51,7 +53,6 @@ def PRF(nym_id: bytes, nym_scope: str) -> bytes:
 
 
 class Issuance:
-
     # TODO Rustify
     @staticmethod
     def prepare(rng: Rng, public_parameters: bytes) -> CredentialSignRequest:
@@ -69,16 +70,16 @@ class Issuance:
     def finalize(state: Any, response: CredentialSignResponse) -> Credential:
         return b"credential"
 
-class Submission:
 
+class Submission:
     # TODO Rustify
     @staticmethod
-    def prepare(rng: Rng, parameters : bytes) -> Tuple[bytes, Any]:
+    def prepare(rng: Rng, parameters: bytes) -> Tuple[bytes, Any]:
         """
-        # Returns 
+        # Returns
         (credential_submission_preparation, state)
         """
-        return (b'preparation successful', {})
+        return (b"preparation successful", {})
 
     # TODO Rustify
     @staticmethod
