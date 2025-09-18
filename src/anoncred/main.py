@@ -136,6 +136,7 @@ class MeasurementsResponse(BaseModel):
     results: list[Measurement]
 
 
+# This is mostly a debug endpoint just to see when the data is stored on db
 @app.get("/measurements", response_model=MeasurementsResponse)
 def get_measurements(session: SessionDep):
     q = select(models.Measurement).limit(100)
