@@ -9,7 +9,7 @@ def test_manifest(client):
     assert r.status_code == 200, r.json()
 
 
-def test_workflow(client):
+def test_basic_usage(client):
     # Assume server is initialized
 
     # Registration
@@ -17,7 +17,7 @@ def test_workflow(client):
     pp_s: str = resp["public_parameters"]
     pp = to_bin(pp_s)
     user = ooni.UserState(pp)
-    reg_request = user.make_register_request()
+    reg_request = user.make_registration_request()
     reg_response = postj(
         client,
         "/register",

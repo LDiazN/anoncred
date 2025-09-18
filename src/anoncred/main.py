@@ -1,13 +1,13 @@
 from contextlib import asynccontextmanager
-from fastapi import HTTPException
 from sqlmodel import select
-from fastapi import FastAPI, Response
-from .utils import to_bin, to_str
+from fastapi import FastAPI
+from .utils import to_bin, to_str, to_http_excepion
 from .models import create_db_and_tables, init_server_state
 from . import models
 from pydantic import BaseModel
 from .dependencies import SessionDep, ServerStateDep
 import base64
+from ooniauth_py import DeserializationFailed, ProtocolError, CredentialError
 import logging
 
 logger = logging.getLogger(__file__)
@@ -70,8 +70,17 @@ class RegisterResponse(BaseModel):
 @app.post("/register", response_model=RegisterResponse)
 def register(request: RegisterRequest, session: SessionDep, state: ServerStateDep):
     req_s = request.credential_sign_request
-    req = to_bin(req_s)
-    result = state.handle_registration_request(req)
+
+    try:
+        req = to_bin(req_s)
+    except DeserializationFailed as e:
+        raise to_http_excepion(e)
+
+    try:
+        result = state.handle_registration_request(req)
+    except (ProtocolError, CredentialError) as e:
+        raise to_http_excepion(e)
+
     return RegisterResponse(
         credential_sign_response=to_str(result), emission_date=state.today()
     )
@@ -92,17 +101,23 @@ class SubmitResponse(BaseModel):
 
 @app.post("/submit", response_model=SubmitResponse)
 def submit(request: SubmitRequest, session: SessionDep, state: ServerStateDep):
-    request_bin = to_bin(request.submit_request)
-    nym_bin = to_bin(request.nym)
+    try:
+        request_bin = to_bin(request.submit_request)
+        nym_bin = to_bin(request.nym)
+    except DeserializationFailed as e:
+        raise to_http_excepion(e)
 
-    result = state.handle_submit_request(
-        nym_bin,
-        request_bin,
-        request.measurement.probe_cc,
-        request.measurement.probe_asn,
-        request.age_range,
-        request.measurement_count_range,
-    )
+    try:
+        result = state.handle_submit_request(
+            nym_bin,
+            request_bin,
+            request.measurement.probe_cc,
+            request.measurement.probe_asn,
+            request.age_range,
+            request.measurement_count_range,
+        )
+    except (ProtocolError, CredentialError) as e:
+        raise to_http_excepion(e)
 
     session.add(
         models.Measurement(
@@ -136,9 +151,3 @@ def get_measurements(session: SessionDep):
         )
 
     return response
-
-
-# -- < Credential update > ---------------------------
-@app.post("/update/credentials")
-def update_credentials():
-    return {"update_credentials"}
