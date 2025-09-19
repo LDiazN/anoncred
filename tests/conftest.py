@@ -1,8 +1,8 @@
 from typing import Callable
 from pathlib import Path
-from anoncred.models import Session, SigningKeyPair
+from anoncred.models import Session
 from anoncred.main import app
-from anoncred.dependencies import SessionDep, get_session
+from anoncred.dependencies import get_session
 from anoncred.models import ServerState
 import ooniauth_py as ooni
 from fastapi.testclient import TestClient
@@ -30,7 +30,6 @@ def fake_get_session():
 
     def get_session():
         with Session(engine) as session:
-            add_signing_keys(session)
             add_server_state(session)
             yield session
 
@@ -51,13 +50,6 @@ def client(fake_get_session: Callable[[], Session]):
     app.dependency_overrides[get_session] = fake_get_session
     client = TestClient(app)
     yield client
-
-
-def add_signing_keys(session: Session):
-    keys = SigningKeyPair(public_key="public", secret_key="secret")
-    session.add(keys)
-    session.commit()
-    session.refresh(keys)
 
 
 def add_server_state(session: Session):

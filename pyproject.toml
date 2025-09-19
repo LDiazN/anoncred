@@ -10,9 +10,7 @@ readme = "README.md"
 requires-python = ">=3.8"
 license = "MIT"
 keywords = []
-authors = [
-  { name = "Luis Díaz", email = "ldiazn98@gmail.com" },
-]
+authors = [{ name = "Luis Díaz", email = "ldiazn98@gmail.com" }]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Programming Language :: Python",
@@ -24,11 +22,7 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
-dependencies = [
-    "fastapi[standard]",
-    "sqlmodel",
-    "httpx",
-]
+dependencies = ["fastapi[standard]", "sqlmodel", "httpx"]
 
 [project.urls]
 Documentation = "https://github.com/Luis Díaz/anoncred#readme"
@@ -43,13 +37,20 @@ path = "src/anoncred/__about__.py"
 allow-direct-references = true
 
 [tool.hatch.envs.default]
-dependencies = ["pytest", "pytest-cov", "click", "black", "pytest-postgresql", "pytest-asyncio", "pytest-docker"]
+dependencies = [
+  "pytest",
+  "pytest-cov",
+  "click",
+  "black",
+  "pytest-postgresql",
+  "pytest-asyncio",
+  "pytest-docker",
+  "pytest-benchmark",
+]
 
 path = ".venv/"
 [tool.hatch.envs.types]
-extra-dependencies = [
-  "mypy>=1.0.0",
-]
+extra-dependencies = ["mypy>=1.0.0"]
 [tool.hatch.envs.types.scripts]
 check = "mypy --install-types --non-interactive {args:src/anoncred tests}"
 
@@ -57,17 +58,11 @@ check = "mypy --install-types --non-interactive {args:src/anoncred tests}"
 source_pkgs = ["anoncred", "tests"]
 branch = true
 parallel = true
-omit = [
-  "src/anoncred/__about__.py",
-]
+omit = ["src/anoncred/__about__.py"]
 
 [tool.coverage.paths]
 anoncred = ["src/anoncred", "*/anoncred/src/anoncred"]
 tests = ["tests", "*/anoncred/tests"]
 
 [tool.coverage.report]
-exclude_lines = [
-  "no cov",
-  "if __name__ == .__main__.:",
-  "if TYPE_CHECKING:",
-]
+exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
