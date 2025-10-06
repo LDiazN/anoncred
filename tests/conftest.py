@@ -12,11 +12,9 @@ import random
 import string
 import os
 
-
 def generate_random_string(length=6):
     characters = string.ascii_letters + string.digits  # a-zA-Z0-9
     return "".join(random.choices(characters, k=length))
-
 
 @pytest.fixture
 def fake_get_session():
@@ -28,9 +26,11 @@ def fake_get_session():
 
     SQLModel.metadata.create_all(engine)
 
+    with Session(engine) as session:
+        add_server_state(session)
+
     def get_session():
         with Session(engine) as session:
-            add_server_state(session)
             yield session
 
     yield get_session

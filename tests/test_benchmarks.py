@@ -1,6 +1,5 @@
 from .utils import getj, postj
 import ooniauth_py as ooni
-from anoncred.utils import to_bin, to_str
 
 def test_bench_registration(benchmark, client):
     """
@@ -11,10 +10,9 @@ def test_bench_registration(benchmark, client):
 
     # Registration
     resp = getj(client, "/manifest")
-    pp_s: str = resp["public_parameters"]
-    pp = to_bin(pp_s)
+    pp: str = resp["public_parameters"]
     user = ooni.UserState(pp)
-    reg_request = to_str(user.make_registration_request())
+    reg_request = user.make_registration_request()
 
     def register():
         postj(
@@ -33,23 +31,22 @@ def test_bench_registration(benchmark, client):
 def test_bench_submit(benchmark, client):
 
     resp = getj(client, "/manifest")
-    pp_s: str = resp["public_parameters"]
-    pp = to_bin(pp_s)
+    pp: str = resp["public_parameters"]
     user = ooni.UserState(pp)
     reg_request = user.make_registration_request()
     reg_response = postj(
         client,
         "/register",
         json={
-            "credential_sign_request": to_str(reg_request),
+            "credential_sign_request": reg_request,
             "manifest_version": resp["version"],
         },
     )
 
-    response_bin = to_bin(reg_response["credential_sign_response"])
+    response = reg_response["credential_sign_response"]
     emission_date = reg_response["emission_date"]  # Credentials are valid for 30 days
 
-    user.handle_registration_response(response_bin)
+    user.handle_registration_response(response)
 
     # Submission
     asn = "AS1234"
@@ -58,8 +55,8 @@ def test_bench_submit(benchmark, client):
     submit_req = user.make_submit_request(
         probe_asn=asn, probe_cc=cc, emission_date=emission_date
     )
-    nym = to_str(submit_req.nym)
-    req = to_str(submit_req.request)
+    nym = submit_req.nym
+    req = submit_req.request
 
     def submit():
         resp = client.post(

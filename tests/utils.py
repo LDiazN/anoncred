@@ -1,7 +1,6 @@
 import ooniauth_py as ooni
 from typing import Any, Dict
 from httpx import Client
-from anoncred.utils import to_str, to_bin
 
 def submit_request(
     user: ooni.UserState,
@@ -10,7 +9,7 @@ def submit_request(
     probe_cc: str,
     emission_date: int,
     submit_req: ooni.SubmitRequest | None = None
-) -> bytes:
+) -> str:
 
     if submit_req is None:
         submit_req = user.make_submit_request(
@@ -21,8 +20,8 @@ def submit_request(
         client,
         "/submit",
         json={
-            "nym": to_str(submit_req.nym),
-            "submit_request": to_str(submit_req.request),
+            "nym": submit_req.nym,
+            "submit_request": submit_req.request,
             "measurement": {
                 "probe_cc": probe_cc,
                 "probe_asn": probe_asn,
@@ -33,7 +32,7 @@ def submit_request(
         },
     )
 
-    return to_bin(submit_resp["submit_response"])
+    return submit_resp["submit_response"]
 
 
 def getj(client: Client, path: str):
