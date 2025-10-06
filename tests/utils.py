@@ -2,15 +2,15 @@ import ooniauth_py as ooni
 from typing import Any, Dict
 from httpx import Client
 
+
 def submit_request(
     user: ooni.UserState,
     client: Client,
     probe_asn: str,
     probe_cc: str,
     emission_date: int,
-    submit_req: ooni.SubmitRequest | None = None
+    submit_req: ooni.SubmitRequest | None = None,
 ) -> str:
-
     if submit_req is None:
         submit_req = user.make_submit_request(
             probe_asn=probe_asn, probe_cc=probe_cc, emission_date=emission_date

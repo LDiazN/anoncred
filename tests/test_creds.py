@@ -1,12 +1,14 @@
 import ooniauth_py as ooni
 from .utils import getj, postj, submit_request
 import logging
+
 log = logging.getLogger(__file__)
 
 
 def test_manifest(client):
     r = client.get("/manifest")
     assert r.status_code == 200, r.json()
+
 
 def test_library():
     # test only the library, without going through the API
@@ -19,6 +21,7 @@ def test_library():
     resp = server.handle_registration_request(reg_request)
     client.handle_registration_response(resp)
 
+
 def test_basic_usage(client):
     # Assume server is initialized
 
@@ -27,7 +30,7 @@ def test_basic_usage(client):
     pp: str = resp["public_parameters"]
     user = ooni.UserState(pp)
     reg_request = user.make_registration_request()
-    
+
     reg_response = postj(
         client,
         "/register",
@@ -41,7 +44,6 @@ def test_basic_usage(client):
     emission_date = reg_response["emission_date"]  # Credentials are valid for 30 days
 
     user.handle_registration_response(response)
-
 
     # Submission
     response = submit_request(user, client, "AS1234", "VE", emission_date)
@@ -57,4 +59,3 @@ def test_basic_usage(client):
     # Check that measurements where saved to DB
     resp = getj(client, "/measurements")
     assert len(resp["results"]) == 3
-

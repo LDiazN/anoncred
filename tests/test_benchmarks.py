@@ -1,6 +1,7 @@
 from .utils import getj, postj
 import ooniauth_py as ooni
 
+
 def test_bench_registration(benchmark, client):
     """
     This test will benchmark register and submission API endpoints.
@@ -23,13 +24,11 @@ def test_bench_registration(benchmark, client):
                 "manifest_version": resp["version"],
             },
         )
-    
+
     benchmark(register)
 
 
-
 def test_bench_submit(benchmark, client):
-
     resp = getj(client, "/manifest")
     pp: str = resp["public_parameters"]
     user = ooni.UserState(pp)
@@ -74,5 +73,5 @@ def test_bench_submit(benchmark, client):
             },
         )
         assert resp.status_code == 200
-    
+
     benchmark(submit)

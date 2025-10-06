@@ -55,7 +55,7 @@ def create_db_and_tables():
 
 def init_server_state():
     with Session(engine) as session:
-        try: 
+        try:
             ServerState.get_latest(session)
         except Exception:
             # not existent, create a new one

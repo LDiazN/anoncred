@@ -79,14 +79,14 @@ def register(request: RegisterRequest, session: SessionDep, state: ServerStateDe
 
 # -- < Submission > ----------------------------------
 class SubmitRequest(BaseModel):
-    measurement: Measurement # convert this to string
+    measurement: Measurement  # convert this to string
 
     # New
     submit_request: str
     nym: str
     age_range: list[int]  # [10, 30]
     measurement_count_range: list[int]  # [100, 200]
-    is_verified: bool  | None = None # filled by the server before saved to disk
+    is_verified: bool | None = None  # filled by the server before saved to disk
 
 
 class SubmitResponse(BaseModel):
@@ -95,7 +95,6 @@ class SubmitResponse(BaseModel):
 
 @app.post("/submit", response_model=SubmitResponse)
 def submit(request: SubmitRequest, session: SessionDep, state: ServerStateDep):
-
     try:
         result = state.handle_submit_request(
             request.nym,
